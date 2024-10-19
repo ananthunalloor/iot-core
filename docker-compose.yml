@@ -1,0 +1,35 @@
+services:
+  ros2:
+    container_name: ros2_container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - ROS_VERSION=2
+      - ROS_DISTRO=jazzy
+      - ROS_PYTHON_VERSION=3
+      - AWS_ACCESS_KEY_ID=''
+      - AWS_SECRET_ACCESS_KEY=''
+      - AWS_DEFAULT_REGION=ap-south-1
+      - AWS_REGION=ap-south-1
+      - CERT_FOLDER_LOCATION=/root/aws-iot-robot-connectivity-samples-ros2/iot_certs_and_config/
+      - THING_NAME=test_ros2_thing
+      - IOT_CONFIG_TEMPLATE=/root/aws-iot-robot-connectivity-samples-ros2/templates/iot_config_template.json
+      - IOT_POLICY_TEMPLATE=/root/aws-iot-robot-connectivity-samples-ros2/templates/iot_policy_template.json
+      - IOT_POLICY_NAME=ros2_robot_iot_policy
+      - IOT_CONFIG_FILE=/root/aws-iot-robot-connectivity-samples-ros2/iot_certs_and_config/iot_config.json
+      - IOT_POLICY_FILE=/root/aws-iot-robot-connectivity-samples-ros2/iot_certs_and_config/iot_policy.json
+      - PORT=8883
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./.aws:/root/.aws 
+      - ./ros2_ws:/root/ros2_ws
+    network_mode: host
+    tty: true
+    stdin_open: true
+    entrypoint: bash
+    # command: ./setup.sh
+    ports:
+      -  "8883:8883"
