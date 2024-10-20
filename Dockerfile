@@ -1,17 +1,25 @@
 # Use an official ROS 2 base image, for example, osrf/ros:jazzy-desktop
 FROM osrf/ros:jazzy-desktop
 
+# install dev dependencies, not for deployment
+RUN apt-get update && \
+    apt-get install -y \
+    iputils-ping \
+    net-tools \
+    vim \
+    nano && \
+    rm -rf /var/lib/apt/lists/*
+    
 # Install dependencies for AWS CLI
 RUN apt-get update && \
     apt-get install -y \
     curl \
-    iputils-ping \
     less \
     python3 \
     python3-pip \
     unzip && \
     rm -rf /var/lib/apt/lists/*
-    
+
 RUN pip install awsiotsdk --break-system-packages
 
 ENV PATH="/opt/venv/bin:$PATH"
@@ -36,7 +44,5 @@ WORKDIR /root/aws-iot-robot-connectivity-samples-ros2/workspace
 RUN source /opt/ros/jazzy/setup.bash && colcon build
 
 RUN echo "source /root/aws-iot-robot-connectivity-samples-ros2/workspace/install/setup.bash" >> ~/.bashrc
-
-COPY  ./ros2_ws /root/ros2_ws
 
 CMD ["bash"]
