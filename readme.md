@@ -69,6 +69,13 @@ aws iot attach-policy --policy-name $IOT_POLICY_NAME --target $CERT_ARN
 
 ros2 run telemetry_mqtt mqtt_telemetry_pub --ros-args --param path_for_config:=$IOT_CONFIG_FILE
 
+/home/scripts# ./thing_setup.sh
+
+cd /home/ros2_ws/sub_demo
+./build.sh
+
+ros2 run sub_demo subscriber_demo
+
 
 truncate -s 0 iot_config.json
 truncate -s 0 iot_policy.json
