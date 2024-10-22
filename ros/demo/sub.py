@@ -4,7 +4,6 @@ import time
 from awscrt import mqtt
 from awsiot import mqtt_connection_builder
 
-# Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 
@@ -21,7 +20,6 @@ def configure_mqtt_client():
         pri_key_filepath=cert_data["privateKeyPath"],
         ca_filepath=cert_data["rootCAPath"],
         client_id=cert_data.get("clientID", "test_ros2_thing"),
-        # client_id='test_ros2_thing', 
     )
 
     return mqtt_connection

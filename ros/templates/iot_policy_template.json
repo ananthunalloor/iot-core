@@ -1,0 +1,29 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["iot:Publish", "iot:Receive", "iot:RetainPublish"],
+      "Resource": [
+        "arn:aws:iot:REGION:ACCOUNT_ID:topic/ros2_mock_telemetry_topic",
+        "arn:aws:iot:REGION:ACCOUNT_ID:topic/ros2_mock_publish_topic",
+        "arn:aws:iot:REGION:ACCOUNT_ID:topic/cmd_vel",
+        "arn:aws:iot:REGION:ACCOUNT_ID:topic/$aws/rules/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["iot:Subscribe"],
+      "Resource": [
+        "arn:aws:iot:REGION:ACCOUNT_ID:topicfilter/ros2_mock_telemetry_topic",
+        "arn:aws:iot:REGION:ACCOUNT_ID:topicfilter/ros2_mock_publish_topic",
+        "arn:aws:iot:REGION:ACCOUNT_ID:topicfilter/cmd_vel"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["iot:Connect"],
+      "Resource": ["arn:aws:iot:REGION:ACCOUNT_ID:client/CLIENT"]
+    }
+  ]
+}

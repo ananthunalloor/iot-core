@@ -1,0 +1,11 @@
+{
+    "endpoint" : "ENDPOINT",
+    "rootCAPath" : "ROOTCA",
+    "certificatePath" : "CERTPATH",
+    "privateKeyPath" : "PRIVATEKEY",
+    "port" : PORT,
+    "clientID" : "CLIENT",
+    "region": "REGION",
+    "retryWaitTime": 5,
+    "retryAttempts": 10
+}
