@@ -10,7 +10,7 @@ logger = logging.getLogger()
 TOPIC = "ros2_mock_publish_topic"
 
 def configure_mqtt_client():
-    with open('/root/aws-iot-robot-connectivity-samples-ros2/iot_certs_and_config/iot_config.json') as f:
+    with open('/home/ros/cert/iot_config.json') as f:
         cert_data = json.load(f)
 
     mqtt_connection = mqtt_connection_builder.mtls_from_path(

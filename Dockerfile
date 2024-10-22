@@ -9,7 +9,7 @@ RUN apt-get update && \
     vim \
     nano && \
     rm -rf /var/lib/apt/lists/*
-    
+
 # Install dependencies for AWS CLI
 RUN apt-get update && \
     apt-get install -y \
@@ -37,12 +37,14 @@ SHELL [ "/bin/bash", "-c" ]
 
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 
-RUN git clone https://github.com/aws-samples/aws-iot-robot-connectivity-samples-ros2 /root/aws-iot-robot-connectivity-samples-ros2
+RUN git clone https://github.com/aws-samples/aws-iot-robot-connectivity-samples-ros2 /home/ros2-samples
 
-WORKDIR /root/aws-iot-robot-connectivity-samples-ros2/workspace
+WORKDIR /home/ros2-samples/workspace
 
 RUN source /opt/ros/jazzy/setup.bash && colcon build
 
-RUN echo "source /root/aws-iot-robot-connectivity-samples-ros2/workspace/install/setup.bash" >> ~/.bashrc
+RUN echo "source /home/ros2-samples/workspace/install/setup.bash" >> ~/.bashrc
+
+WORKDIR /home/ros
 
 CMD ["bash"]

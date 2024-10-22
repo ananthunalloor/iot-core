@@ -7,9 +7,7 @@ POLICY_FILE="$IOT_POLICY_FILE"
 
 CERT_FILE="${CERT_FOLDER_LOCATION}${THING_NAME}.cert.pem"
 ROOT_CERT_FILE="${CERT_FOLDER_LOCATION}rootCA.crt"
-
-POLICY_EXISTS=$(aws iot list-policies | grep -c "\"policyName\": \"$IOT_POLICY_NAME\"")
-CERT_ARN=$(aws iot list-certificates --query "certificates[?status=='ACTIVE'].certificateArn" --output text)
+# CERT_ARN=$(aws iot list-certificates --query "certificates[?status=='ACTIVE'].certificateArn" --output text)
 
 echo "THING_NAME: $THING_NAME"
 echo "IOT_CONFIG_FILE: $IOT_CONFIG_FILE"
@@ -19,9 +17,13 @@ echo "CERT_FOLDER_LOCATION: $CERT_FOLDER_LOCATION"
 echo "POLICY_EXISTS: $POLICY_EXISTS"
 echo "CERT_EXISTS: $CERT_EXISTS"
 
+# Get the thing ARN if it exists
+THING_ARN=$(aws iot list-things --query "things[?thingName=='$THING_NAME'].thingArn" --output text)
 
-# Create the thing and get its ARN
-THING_ARN=$(aws iot create-thing --thing-name "$THING_NAME" --query thingArn --output text)
+if [ -z "$THING_ARN" ]; then
+    echo "Thing does not exist. Creating it..."
+    THING_ARN=$(aws iot create-thing --thing-name "$THING_NAME" --query thingArn --output text)
+fi
 export THING_ARN
 
 echo "Creating cert and attaching to thing"
@@ -63,6 +65,13 @@ sed -i -e "s/REGION/$AWS_REGION/g" "$IOT_POLICY_FILE"
 
 cat "$IOT_POLICY_FILE"
 echo "Policy file created"
-aws iot create-policy --policy-name "$IOT_POLICY_NAME" --policy-document file://"$IOT_POLICY_FILE"
+
+#check if policy exists in aws
+POLICY_EXISTS=$(aws iot list-policies | grep -c "\"policyName\": \"$IOT_POLICY_NAME\"")
+if [ "$POLICY_EXISTS" -eq 0 ]; then
+    echo "Policy does not exist. Creating it..."
+    aws iot create-policy --policy-name "$IOT_POLICY_NAME" --policy-document file://"$IOT_POLICY_FILE"
+fi
+# aws iot create-policy --policy-name "$IOT_POLICY_NAME" --policy-document file://"$IOT_POLICY_FILE"
 aws iot attach-policy --policy-name "$IOT_POLICY_NAME" --target "$CERT_ARN"
 
