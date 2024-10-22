@@ -4,45 +4,93 @@ from std_msgs.msg import String
 from awscrt import io, mqtt, auth, http
 from awsiot import mqtt_connection_builder
 import json
-from sub_demo.connection_helper import ConnectionHelper
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 class TelemetrySubscriber(Node):
     def __init__(self):
         super().__init__('telemetry_subscriber')
         self.declare_parameter("path_for_config", "")
-        self.declare_parameter("discover_endpoints", False)
+        self.declare_parameter("aws_topic", "ros2_mock_publish_topic")
 
         path_for_config = self.get_parameter("path_for_config").get_parameter_value().string_value
-        discover_endpoints = self.get_parameter("discover_endpoints").get_parameter_value().bool_value
-        self.connection_helper = ConnectionHelper(self.get_logger(), path_for_config, discover_endpoints)
+        self.aws_topic = self.get_parameter("aws_topic").get_parameter_value().string_value
 
-        self.subscription = self.create_subscription(
-            String, 
-            'ros2_mock_publish_topic',
-            self.listener_callback,
-            10  # QoS (Quality of Service) profile
-        )
-        self.subscription
+        try:
+            with open(path_for_config, 'r') as f:
+                cert_data = json.load(f)
+        except FileNotFoundError:
+            self.get_logger().error(f"Configuration file not found: {path_for_config}")
+            return
+        except json.JSONDecodeError:
+            self.get_logger().error("Failed to parse configuration file as JSON.")
+            return
+
+        self.mqtt_connection = self.create_mqtt_connection(cert_data)
         self.init_subs()
-        
-    def init_subs(self):
-        """Subscribe to mock ros2_mock_publish_topic topic"""
-        self.subscription = self.create_subscription(
-            String,
-            'ros2_mock_publish_topic',
-            self.listener_callback,
-            10
-        ) 
 
-    def listener_callback(self, msg):
-        self.get_logger().info(f'Received message from ros2_mock_publish_topic: "{msg.data}"')
+    def create_mqtt_connection(self, cert_data):
+        """Create an MQTT connection to AWS IoT."""
+        logger = self.get_logger()
+        try:
+            mqtt_connection = mqtt_connection_builder.mtls_from_path(
+                endpoint=cert_data["endpoint"],
+                port=cert_data.get("port"),
+                cert_filepath=cert_data["certificatePath"],
+                pri_key_filepath=cert_data["privateKeyPath"],
+                ca_filepath=cert_data["rootCAPath"],
+                client_id=cert_data.get("clientID"),
+            )
+            connect_future = mqtt_connection.connect()
+            connect_future.result()
+            logger.info("Connected to AWS IoT")
+            return mqtt_connection
+        except Exception as e:
+            logger.error(f"Failed to connect to AWS IoT: {e}")
+            return None
+
+    def init_subs(self):
+        """Subscribe to the AWS IoT topic."""
+        if not self.mqtt_connection:
+            self.get_logger().error("MQTT connection is not established.")
+            return
+
+        logger = self.get_logger()
+        logger.info(f"Subscribing to topic: {self.aws_topic}")
+        try:
+            subscribe_future, packet_id = self.mqtt_connection.subscribe(
+                topic=self.aws_topic,
+                qos=mqtt.QoS.AT_LEAST_ONCE,
+                callback=self.aws_topic_callback
+            )
+            subscribe_result = subscribe_future.result()
+            logger.info(f"Subscribed with QoS: {subscribe_result['qos']} to topic: {self.aws_topic} with packet_id: {packet_id}")
+        except Exception as e:
+            logger.error(f"Failed to subscribe to topic {self.aws_topic}: {e}")
+
+    def aws_topic_callback(self, topic, payload, **kwargs):
+        """Callback function for AWS IoT messages."""
+        logger = self.get_logger()
+        try:
+            message = json.loads(payload)
+            logger.info(f'Received message from AWS topic "{topic}": {message}')
+        except json.JSONDecodeError:
+            logger.error(f"Failed to decode message payload: {payload}")
+        except Exception as e:
+            logger.error(f"Error in callback: {e}")
 
 def main(args=None):
     rclpy.init(args=args)
     telemetry_subscriber = TelemetrySubscriber()
-    rclpy.spin(telemetry_subscriber)
-    telemetry_subscriber.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(telemetry_subscriber)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if telemetry_subscriber.mqtt_connection:
+            telemetry_subscriber.mqtt_connection.disconnect().result()
+        telemetry_subscriber.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
