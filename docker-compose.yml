@@ -2,7 +2,7 @@ services:
   ros2:
     container_name: ros2_container
     build:
-      context: .
+      context: ros
       dockerfile: Dockerfile
     environment:
       - DISPLAY=${DISPLAY}
@@ -19,19 +19,28 @@ services:
       - PORT=8883
       - THING_NAME=test_ros2_thing
       - IOT_POLICY_NAME=ros2_robot_iot_policy
-      - CERT_FOLDER_LOCATION=/root/aws-iot-robot-connectivity-samples-ros2/iot_certs_and_config/
-      - IOT_CONFIG_TEMPLATE=/root/aws-iot-robot-connectivity-samples-ros2/templates/iot_config_template.json
-      - IOT_POLICY_TEMPLATE=/root/aws-iot-robot-connectivity-samples-ros2/templates/iot_policy_template.json
-      - IOT_CONFIG_FILE=/root/aws-iot-robot-connectivity-samples-ros2/iot_certs_and_config/iot_config.json
-      - IOT_POLICY_FILE=/root/aws-iot-robot-connectivity-samples-ros2/iot_certs_and_config/iot_policy.json
+
+      - IOT_CONFIG_TEMPLATE=/home/ros/templates/iot_config_template.json
+      - IOT_POLICY_TEMPLATE=/home/ros/templates/iot_policy_template.json
+
+      - CERT_FOLDER_LOCATION=/home/ros/cert/
+      - IOT_CONFIG_FILE=/home/ros/cert/iot_config.json
+      - IOT_POLICY_FILE=/home/ros/cert/iot_policy.json
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ./.aws:/root/.aws
-      - ./ros2_ws:/home/ros2_ws
-      - ./scripts:/home/scripts
+      - ./ros:/home/ros
     network_mode: host
     tty: true
     stdin_open: true
     ports:
       - "8883:8883"
     entrypoint: ["bash"]
+
+  frontend:
+    container_name: frontend_container
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
