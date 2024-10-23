@@ -94,3 +94,13 @@ source /root/ros2_ws/aws-iot-robot-connectivity-samples-ros2/workspace/install/s
 ros2 run telemetry_mqtt mock_telemetry_pub --ros-args --param path_for_config:=$IOT_CONFIG_FILE
 
 aws iot-data publish --topic "ros2_mock_publish_topic" --payload '{"message": "Hello from AWS IoT!"}' --cli-binary-format raw-in-base64-out
+
+# KVS
+
+git clone https://github.com/awslabs/amazon-kinesis-video-streams-producer-sdk-cpp
+
+mkdir build
+make build
+cmake
+
+git clone --recursive https://github.com/awslabs/amazon-kinesis-video-streams-webrtc-sdk-c.git
