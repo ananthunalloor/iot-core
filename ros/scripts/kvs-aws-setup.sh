@@ -30,3 +30,7 @@ aws kinesis-video-archived-media create-stream --stream-name "$THING_NAME"
 
 # in aws create a kvs signaling channel
 aws kinesis-video-archived-media create-signaling-channel --channel-name "$THING_NAME"
+
+aws iot describe-endpoint --endpoint-type iot:CredentialProvider --output text > ${CERT_FOLDER_LOCATION}iot-credential-provider.txt
+
+curl --silent 'https://www.amazontrust.com/repository/SFSRootCAG2.pem' --output ${CERT_FOLDER_LOCATION}kvs.cert.pem
