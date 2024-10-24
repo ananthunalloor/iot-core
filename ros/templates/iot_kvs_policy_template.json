@@ -1,0 +1,15 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["iot:Connect"],
+      "Resource": "RESOURCE"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["iot:AssumeRoleWithCertificate"],
+      "Resource": "RESOURCE"
+    }
+  ]
+}

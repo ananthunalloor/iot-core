@@ -1,0 +1,16 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kinesisvideo:DescribeSignalingChannel",
+        "kinesisvideo:CreateSignalingChannel",
+        "kinesisvideo:GetSignalingChannelEndpoint",
+        "kinesisvideo:GetIceServerConfig",
+        "kinesisvideo:ConnectAsMaster"
+      ],
+      "Resource": "arn:aws:kinesisvideo:*:*:channel/${credentials-iot:ThingName}/*"
+    }
+  ]
+}
