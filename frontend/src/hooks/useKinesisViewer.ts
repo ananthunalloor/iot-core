@@ -3,7 +3,7 @@ import { CredentialsType, useAwsCredentials } from "./use-get-aws-credentials";
 import { KinesisVideo, KinesisVideoSignalingChannels } from "aws-sdk";
 import { ChannelProtocol, ChannelRole, ResourceEndpointListItem } from "aws-sdk/clients/kinesisvideo";
 import { Uri } from "aws-sdk/clients/kinesisvideosignalingchannels";
-import { Role, SignalingClient } from 'amazon-kinesis-video-streams-webrtc';
+import { Role, SignalingClient, SigV4RequestSigner } from 'amazon-kinesis-video-streams-webrtc';
 
 export type ResourceEndpoint = {
     "HTTPS": string
@@ -131,13 +131,7 @@ export const useKinesisViewer = (ref: RefObject<HTMLVideoElement>) => {
                     ChannelARN: channelARN,
                 })
                 .promise();
-            // getIceServerConfigResponse.IceServerList?.forEach(iceServer =>
-            //     iceServers.push({
-            //         urls: (iceServer.Uris || '') as Uri,
-            //         username: iceServer.Username,
-            //         credential: iceServer.Password,
-            //     }),
-            // );
+
             getIceServerConfigResponse.IceServerList?.forEach(iceServer => {
                 setIceServers(prev => {
                     return [...prev, {
@@ -161,7 +155,7 @@ export const useKinesisViewer = (ref: RefObject<HTMLVideoElement>) => {
     useEffect(() => {
         if (!iceServers || !kinesisVideoClient || !channelARN || !endpoint || !credentials?.accessKeyId || !credentials?.secretAccessKey) return;
         const peerConnection = new RTCPeerConnection({ iceServers, iceTransportPolicy: "all", });
-        // console.log("iceServers", endpoint.WSS);
+
         const signalingClient = new SignalingClient({
             channelARN,
             channelEndpoint: endpoint.WSS,
@@ -173,6 +167,20 @@ export const useKinesisViewer = (ref: RefObject<HTMLVideoElement>) => {
                 secretAccessKey: credentials.secretAccessKey,
                 sessionToken: credentials.sessionToken
             },
+            requestSigner: {
+                getSignedURL: async function (signalingEndpoint, queryParams, date) {
+
+                    const signer = new SigV4RequestSigner(
+                        import.meta.env.VITE_REGION, {
+                        accessKeyId: credentials.accessKeyId || '',
+                        secretAccessKey: credentials.secretAccessKey || '',
+                        sessionToken: credentials.sessionToken
+                    });
+                    const retVal = await signer.getSignedURL(signalingEndpoint, queryParams, date);
+
+                    return retVal;
+                },
+            },
             systemClockOffset: kinesisVideoClient.config.systemClockOffset,
         });
 
@@ -182,26 +190,18 @@ export const useKinesisViewer = (ref: RefObject<HTMLVideoElement>) => {
         };
 
         signalingClient.on('open', async () => {
-            // try {
-            // const localStream = await navigator.mediaDevices.getUserMedia({
-            //     video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-            //     audio: true,
-            // });
-            // localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-            // console.log("Local stream added to peer connection");
-            // } catch (e) {
-            //     console.error(e);
-            //     return;
-            // }
             console.log("Signaling client opened");
             try {
-                const offer = await peerConnection.createOffer({ offerToReceiveVideo: true, offerToReceiveAudio: true });
-                // signalingClient.sendSdpOffer(peerConnection.localDescription!);
-                peerConnection?.addTransceiver("video");
-                peerConnection
-                    ?.getTransceivers()
-                    .forEach((t) => (t.direction = "recvonly"));
-                await peerConnection.setLocalDescription(offer);
+
+                await peerConnection.setLocalDescription(
+                    await peerConnection.createOffer({
+                        offerToReceiveAudio: true,
+                        offerToReceiveVideo: true,
+                    }),
+                );
+                console.log("Offer", peerConnection.localDescription);
+                if (peerConnection.localDescription)
+                    signalingClient.sendSdpOffer(peerConnection.localDescription);
             } catch (error) {
                 console.error("Error creating offer:", error);
             }
@@ -219,43 +219,73 @@ export const useKinesisViewer = (ref: RefObject<HTMLVideoElement>) => {
             peerConnection.addIceCandidate(candidate);
         });
 
-        signalingClient.on('close', () => {
-            console.log("Signaling client closed");
-            // Handle client closures
-        });
+        // signalingClient.on('close', () => {
+        //     console.log("Signaling client closed");
+        //     // Handle client closures
+        // });
 
-        signalingClient.on('error', error => {
-            console.error("Signaling client error:", error);
-            // Handle client errors
-        });
+        // signalingClient.on('error', error => {
+        //     console.error("Signaling client error:", error);
+        //     // Handle client errors
+        // });
 
         peerConnection.addEventListener('icecandidate', ({ candidate }) => {
             console.log("Candidate", candidate);
             if (candidate) {
                 signalingClient.sendIceCandidate(candidate);
+                if (peerConnection.localDescription)
+                    signalingClient.sendSdpOffer(peerConnection.localDescription)
             }
         });
+
+        // peerConnection.onicegatheringstatechange = (event) => {
+        //     if (peerConnection.iceGatheringState === 'gathering') {
+        //         console.log("iceGatheringState", peerConnection.iceGatheringState);
+        //     } else if (peerConnection.iceGatheringState === 'complete') {
+        //         console.log("iceGatheringState", peerConnection.iceGatheringState);
+        //     }
+        // }
+
+        peerConnection.onconnectionstatechange = (event) => {
+            if (peerConnection.connectionState === 'new' || peerConnection.connectionState === 'connecting') {
+                console.log("connectionState", peerConnection.connectionState);
+            }
+            if (peerConnection.connectionState === 'connected') {
+                console.log("connectionState", peerConnection.connectionState);
+            }
+        };
+
+        // peerConnection.oniceconnectionstatechange = (event) => {
+        //     if (peerConnection.iceConnectionState === 'connected') {
+        //         peerConnection.getStats().then(stats => {
+        //             stats.forEach(report => {
+        //                 if (report.type === 'candidate-pair') {
+        //                     console.log("candidate-pair", report);
+        //                 }
+        //             });
+        //         });
+        //     }
+        // };
+
+        peerConnection.ondatachannel = event => {
+            // Callback for the data channel created by master
+            event.channel.onmessage = event => {
+                console.log("Data channel message received:", event.data);
+            }
+        };
 
         // As remote tracks are received, add them to the remote view
         peerConnection.addEventListener('track', event => {
             console.log("Remote stream received:", event.streams[0]);
             if (ref.current?.srcObject) {
-                ref.current.srcObject = event.streams[0];
+                return;
             }
+            ref.current!.srcObject = event.streams[0];
+            ref.current!.play();
         });
 
-        peerConnection.addEventListener('iceconnectionstatechange', () => {
-            console.log("ICE connection state:", peerConnection.iceConnectionState);
-            if (peerConnection.iceConnectionState === 'connected') {
-                console.log("ICE connection established");
-            }
-
-            if (peerConnection.iceConnectionState === 'disconnected') {
-                console.log("ICE connection disconnected");
-            }
-        })
         setSignalingClient(signalingClient);
-        signalingClient.open();
+        // signalingClient.open();
 
         return cleanup
 

@@ -209,7 +209,7 @@ export const App = () => {
           <div className="flex flex-row gap-4">
 
             <button className="px-6 py-2 text-lg text-white bg-indigo-500 border-0 rounded" onClick={connectToAwsKinesis}>Connect</button>
-            <button className="px-6 py-2 text-lg text-white bg-indigo-500 border-0 rounded" onClick={disconnectFromAwsKinesis}>Disconnect</button>
+            {/* <button className="px-6 py-2 text-lg text-white bg-indigo-500 border-0 rounded" onClick={disconnectFromAwsKinesis}>Disconnect</button> */}
           </div>
         </div>
       </div>
