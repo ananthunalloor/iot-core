@@ -7,15 +7,8 @@ POLICY_FILE="$IOT_POLICY_FILE"
 
 CERT_FILE="${CERT_FOLDER_LOCATION}${THING_NAME}.cert.pem"
 ROOT_CERT_FILE="${CERT_FOLDER_LOCATION}rootCA.crt"
-# CERT_ARN=$(aws iot list-certificates --query "certificates[?status=='ACTIVE'].certificateArn" --output text)
 
-echo "THING_NAME: $THING_NAME"
-echo "IOT_CONFIG_FILE: $IOT_CONFIG_FILE"
-echo "IOT_POLICY_FILE: $IOT_POLICY_FILE"
-
-echo "CERT_FOLDER_LOCATION: $CERT_FOLDER_LOCATION"
-echo "POLICY_EXISTS: $POLICY_EXISTS"
-echo "CERT_EXISTS: $CERT_EXISTS"
+POLICY_NAME="$THING_NAME$IOT_POLICY_NAME"
 
 # Get the thing ARN if it exists
 THING_ARN=$(aws iot list-things --query "things[?thingName=='$THING_NAME'].thingArn" --output text)
@@ -67,11 +60,18 @@ cat "$IOT_POLICY_FILE"
 echo "Policy file created"
 
 #check if policy exists in aws
-POLICY_EXISTS=$(aws iot list-policies | grep -c "\"policyName\": \"$IOT_POLICY_NAME\"")
+POLICY_EXISTS=$(aws iot list-policies | grep -c "\"policyName\": \"$POLICY_NAME\"")
 if [ "$POLICY_EXISTS" -eq 0 ]; then
     echo "Policy does not exist. Creating it..."
-    aws iot create-policy --policy-name "$IOT_POLICY_NAME" --policy-document file://"$IOT_POLICY_FILE"
+    aws iot create-policy --policy-name "$POLICY_NAME" --policy-document file://"$IOT_POLICY_FILE"
 fi
-# aws iot create-policy --policy-name "$IOT_POLICY_NAME" --policy-document file://"$IOT_POLICY_FILE"
-aws iot attach-policy --policy-name "$IOT_POLICY_NAME" --target "$CERT_ARN"
 
+aws iot attach-policy --policy-name "$POLICY_NAME" --target "$CERT_ARN"
+
+aws iot describe-endpoint --endpoint-type iot:CredentialProvider --output text > ${CERT_FOLDER_LOCATION}iot-credential-provider.txt
+curl --silent 'https://www.amazontrust.com/repository/SFSRootCAG2.pem' --output ${CERT_FOLDER_LOCATION}kvs.cert.pem
+
+aws kinesisvideo create-signaling-channel --channel-name "$THING_NAME"
+aws kinesisvideo create-stream --stream-name "$THING_NAME"
+
+aws iot add-thing-to-thing-group --thing-group-name "$THING_GROUP_NAME" --thing-name "$THING_NAME"

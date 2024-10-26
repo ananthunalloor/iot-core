@@ -8,7 +8,7 @@ from awscrt import mqtt
 from awsiot import mqtt_connection_builder
 
 
-TOPIC = "ros2_mock_telemetry_topic"
+TOPIC = "rover_iot_thing/telemetry_topic"
 
 class TelemetryPublisher(Node):
 
@@ -39,7 +39,7 @@ class TelemetryPublisher(Node):
             cert_filepath=cert_data["certificatePath"],
             pri_key_filepath=cert_data["privateKeyPath"],
             ca_filepath=cert_data["rootCAPath"],
-            client_id=cert_data.get("clientID", "test_ros2_thing"),
+            client_id=cert_data.get("clientID"),
     )
         return mqtt_connection
 

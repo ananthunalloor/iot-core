@@ -5,8 +5,8 @@
       "Effect": "Allow",
       "Action": ["iot:Publish", "iot:Receive", "iot:RetainPublish"],
       "Resource": [
-        "arn:aws:iot:REGION:ACCOUNT_ID:topic/ros2_mock_telemetry_topic",
-        "arn:aws:iot:REGION:ACCOUNT_ID:topic/ros2_mock_publish_topic",
+        "arn:aws:iot:REGION:ACCOUNT_ID:topic/CLIENT/telemetry_topic",
+        "arn:aws:iot:REGION:ACCOUNT_ID:topic/CLIENT/publish_topic",
         "arn:aws:iot:REGION:ACCOUNT_ID:topic/cmd_vel",
         "arn:aws:iot:REGION:ACCOUNT_ID:topic/$aws/rules/*"
       ]
@@ -15,8 +15,8 @@
       "Effect": "Allow",
       "Action": ["iot:Subscribe"],
       "Resource": [
-        "arn:aws:iot:REGION:ACCOUNT_ID:topicfilter/ros2_mock_telemetry_topic",
-        "arn:aws:iot:REGION:ACCOUNT_ID:topicfilter/ros2_mock_publish_topic",
+        "arn:aws:iot:REGION:ACCOUNT_ID:topicfilter/CLIENT/telemetry_topic",
+        "arn:aws:iot:REGION:ACCOUNT_ID:topicfilter/CLIENT/publish_topic",
         "arn:aws:iot:REGION:ACCOUNT_ID:topicfilter/cmd_vel"
       ]
     },

@@ -34,16 +34,16 @@ echo "Starting KVS stream"
 #             role-aliases=$AWS_IOT_CORE_ROLE_ALIAS"
 
 # working
-# gst-launch-1.0 -v videotestsrc do-timestamp=TRUE ! video/x-raw,width=640,height=480 ! x264enc ! h264parse ! kvssink \
-#     stream-name="$THING_NAME" \
-#     aws-region="$AWS_REGION" \
-#     iot-certificate=" \
-#             iot-certificate, \
-#             endpoint=$AWS_IOT_CORE_CREDENTIAL_ENDPOINT, \
-#             cert-path=$AWS_IOT_CORE_CERT, \
-#             key-path=$AWS_IOT_CORE_PRIVATE_KEY, \
-#             ca-path=$AWS_IOT_CORE_CA_PATH, \
-#             role-aliases=$AWS_IOT_CORE_ROLE_ALIAS"
+gst-launch-1.0 -v videotestsrc do-timestamp=TRUE ! video/x-raw,width=640,height=480 ! x264enc ! h264parse ! kvssink \
+    stream-name="$THING_NAME" \
+    aws-region="$AWS_REGION" \
+    iot-certificate=" \
+            iot-certificate, \
+            endpoint=$AWS_IOT_CORE_CREDENTIAL_ENDPOINT, \
+            cert-path=$AWS_IOT_CORE_CERT, \
+            key-path=$AWS_IOT_CORE_PRIVATE_KEY, \
+            ca-path=$AWS_IOT_CORE_CA_PATH, \
+            role-aliases=$AWS_IOT_CORE_ROLE_ALIAS"
 # working
 # gst-launch-1.0 -v videotestsrc do-timestamp=TRUE ! video/x-raw,width=640,height=480 ! x264enc ! h264parse ! kvssink \
 #     stream-name="$THING_NAME" \
@@ -56,16 +56,16 @@ echo "Starting KVS stream"
 #             ca-path=$AWS_IOT_CORE_CA_PATH, \
 #             role-aliases=$AWS_IOT_CORE_ROLE_ALIAS"
 
-gst-launch-1.0 -v rtspsrc location="rtsp://192.168.100.39:8554/test" short-header=TRUE ! rtph264depay ! h264parse ! kvssink \
-    stream-name="$THING_NAME" \
-    aws-region="$AWS_REGION" \
-    iot-certificate=" \
-            iot-certificate, \
-            endpoint=$AWS_IOT_CORE_CREDENTIAL_ENDPOINT, \
-            cert-path=$AWS_IOT_CORE_CERT, \
-            key-path=$AWS_IOT_CORE_PRIVATE_KEY, \
-            ca-path=$AWS_IOT_CORE_CA_PATH, \
-            role-aliases=$AWS_IOT_CORE_ROLE_ALIAS"
+# gst-launch-1.0 -v rtspsrc location="rtsp://192.168.100.39:8554/test" short-header=TRUE ! rtph264depay ! h264parse ! kvssink \
+#     stream-name="$THING_NAME" \
+#     aws-region="$AWS_REGION" \
+#     iot-certificate=" \
+#             iot-certificate, \
+#             endpoint=$AWS_IOT_CORE_CREDENTIAL_ENDPOINT, \
+#             cert-path=$AWS_IOT_CORE_CERT, \
+#             key-path=$AWS_IOT_CORE_PRIVATE_KEY, \
+#             ca-path=$AWS_IOT_CORE_CA_PATH, \
+#             role-aliases=$AWS_IOT_CORE_ROLE_ALIAS"
 
 # gst-launch-1.0 v4l2src do-timestamp=TRUE device=/dev/video0 ! videoconvert ! video/x-raw,format=I420,width=640,height=480,framerate=30/1 ! x264enc  bframes=0 key-int-max=45 bitrate=500 ! video/x-h264,stream-format=avc,alignment=au,profile=baseline ! kvssink stream-name="YourStreamName" storage-size=512 access-key="YourAccessKey" secret-key="YourSecretKey" aws-region="YourAWSRegion"
 
