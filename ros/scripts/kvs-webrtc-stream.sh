@@ -16,10 +16,4 @@ export AWS_IOT_CORE_PRIVATE_KEY="${PRIV}"
 export AWS_IOT_CORE_ROLE_ALIAS="$IOT_KVS_ROLE_ALIAS"
 export AWS_IOT_CORE_CA_PATH="${ROOT_CERT_FILE}"
 
-
-export AWS_IOT_CORE_CREDENTIAL_ENDPOINT=ENDPOINT
-export AWS_IOT_CORE_CERT=CERT
-export AWS_IOT_CORE_PRIVATE_KEY=PRIV
-export AWS_IOT_CORE_ROLE_ALIAS="$IOT_KVS_ROLE_ALIAS"
-export AWS_IOT_CORE_THING_NAME="$THING_NAME"
-/home/ros/kvs/amazon-kinesis-video-streams-webrtc-sdk-c/build/samples/kvsWebrtcClientMasterGstSample $AWS_IOT_CORE_THING_NAME video-only rtspsrc rtsp://192.168.0.162:8554/test
+/home/ros/kvs/amazon-kinesis-video-streams-webrtc-sdk-c/build/samples/kvsWebrtcClientMasterGstSample $AWS_IOT_CORE_THING_NAME video-only-storage rtsp://192.168.0.162:8554

@@ -4,7 +4,9 @@ echo "Setting up KVS"
 
 KVS_SDK_ROOT="$KVS_SDK_ROOT_FOLDER"
 
+mkdir -p $KVS_SDK_ROOT
 cd $KVS_SDK_ROOT
+
 git clone https://github.com/awslabs/amazon-kinesis-video-streams-producer-sdk-cpp.git
 git clone --recursive https://github.com/awslabs/amazon-kinesis-video-streams-webrtc-sdk-c.git
 

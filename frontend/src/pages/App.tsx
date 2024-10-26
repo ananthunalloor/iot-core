@@ -3,6 +3,7 @@ import { useAwsIotMqtt } from "../hooks/use-connect-iot";
 import { mqtt } from "aws-iot-device-sdk-v2";
 import { Joystick } from "react-joystick-component";
 import { useKinesisViewer } from "../hooks/useKinesisViewer";
+import { WebRTCViewer } from "../components/webrtc-viewer";
 
 // import { AWSWebRTCViewer } from "../components/aws-webtrc-viewer";
 // import { AWSWebRTCConfig } from "../hooks/use-connect-kns";
@@ -206,11 +207,16 @@ export const App = () => {
 
               <AWSWebRTCViewer config={config} />
           } */}
+            {/* 
+          */}
           <div className="flex flex-row gap-4">
 
             <button className="px-6 py-2 text-lg text-white bg-indigo-500 border-0 rounded" onClick={connectToAwsKinesis}>Connect</button>
-            {/* <button className="px-6 py-2 text-lg text-white bg-indigo-500 border-0 rounded" onClick={disconnectFromAwsKinesis}>Disconnect</button> */}
+            <button className="px-6 py-2 text-lg text-white bg-indigo-500 border-0 rounded" onClick={disconnectFromAwsKinesis}>Disconnect</button>
           </div>
+        </div>
+        <div className="w-[854px] h-[480px] bg-gray-100 rounded-lg flex flex-col items-center justify-center ">
+             <WebRTCViewer />
         </div>
       </div>
     </div>

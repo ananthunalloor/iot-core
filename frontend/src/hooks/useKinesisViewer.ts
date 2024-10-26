@@ -282,6 +282,8 @@ export const useKinesisViewer = (ref: RefObject<HTMLVideoElement>) => {
             }
             ref.current!.srcObject = event.streams[0];
             ref.current!.play();
+            
+
         });
 
         setSignalingClient(signalingClient);
