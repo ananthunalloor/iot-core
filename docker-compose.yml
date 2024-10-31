@@ -17,8 +17,9 @@ services:
       - AWS_REGION=ap-south-1
 
       - PORT=8883
-      - THING_NAME=test_ros2_thing
-      - IOT_POLICY_NAME=ros2_robot_iot_policy
+      - THING_NAME=rover_iot_thing
+      - IOT_POLICY_NAME=_policy
+      - THING_GROUP_NAME=ros_thing_group
 
       - IOT_CONFIG_TEMPLATE=/home/ros/templates/iot_config_template.json
       - IOT_POLICY_TEMPLATE=/home/ros/templates/iot_policy_template.json
@@ -49,14 +50,16 @@ services:
     network_mode: host
     tty: true
     stdin_open: true
+    # devices:
+    # - /dev/video0:/dev/video0
     ports:
       - "8883:8883"
     entrypoint: ["bash"]
 
-  frontend:
-    container_name: frontend_container
-    build:
-      context: frontend
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
+  # frontend:
+  #   container_name: frontend_container
+  #   build:
+  #     context: frontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8080:8080"
