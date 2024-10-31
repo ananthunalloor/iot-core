@@ -14,7 +14,7 @@ export const useChannelARN = ({ kinesisVideoClient }: useChannelARNProps) => {
 
         const fetchChannelARN = async () => {
             try {
-                const response = await kinesisVideoClient.describeSignalingChannel({ ChannelName: "test_ros2_thing" }).promise();
+                const response = await kinesisVideoClient.describeSignalingChannel({ ChannelName: "rover_iot_thing" }).promise();
                 const arn = response.ChannelInfo?.ChannelARN;
                 if (arn) setChannelARN(arn);
             } catch (error) {

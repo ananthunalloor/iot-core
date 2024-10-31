@@ -13,8 +13,7 @@ export interface useIceServersProps {
 
 export const useIceServers = ({ credentials, channelARN, endpoint }: useIceServersProps) => {
     const [iceServers, setIceServers] = useState<Array<{ urls: Uri; username?: string; credential?: string }>>([
-       
-    ]);
+        ]);
 
     useEffect(() => {
         if (!credentials || !channelARN || !endpoint) return;
@@ -41,9 +40,12 @@ export const useIceServers = ({ credentials, channelARN, endpoint }: useIceServe
                 console.error("Error fetching ICE servers:", error);
             }
         };
-
         fetchIceServers();
     }, [credentials, channelARN, endpoint]);
+
+    useEffect(() => {
+        console.log('Running useIceServers',iceServers);
+    }, [iceServers]);
 
     return iceServers;
 };

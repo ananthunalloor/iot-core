@@ -55,7 +55,7 @@ export const useKinesisViewer = (ref: RefObject<HTMLVideoElement>) => {
             try {
                 const describeSignalingChannelResponse = await kinesisVideoClient
                     .describeSignalingChannel({
-                        ChannelName: "test_ros2_thing",
+                        ChannelName: "rover_iot_thing",
                     })
                     .promise();
 
