@@ -3,6 +3,7 @@ import { useAwsIotMqtt } from "../hooks/use-connect-iot";
 import { mqtt } from "aws-iot-device-sdk-v2";
 import { Joystick } from "react-joystick-component";
 import { WebRTCViewer } from "../components/webrtc-viewer";
+import { StreamPlayer } from "../components/stream-player";
 
 type JoystickDirection = "FORWARD" | "RIGHT" | "LEFT" | "BACKWARD";
 export interface IJoystickUpdateEvent {
@@ -181,8 +182,11 @@ export const App = () => {
             </div>
           </div>
         </div>
-        <div className="w-[854px] bg-gray-100 p-4 rounded-lg flex flex-col items-center justify-center ">
+        <div className="w-[427px] bg-gray-100 p-4 rounded-lg flex flex-col items-center justify-center ">
           <WebRTCViewer />
+        </div>
+        <div className="w-[427px] bg-gray-100 p-4 rounded-lg flex flex-col items-center justify-center ">
+          <StreamPlayer />
         </div>
       </div>
     </div>

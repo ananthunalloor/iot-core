@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aws-sdk/client-kinesis-video": "^3.682.0",
     "amazon-kinesis-video-streams-webrtc": "^2.3.0",
     "aws-iot-device-sdk-v2": "^1.21.1",
     "aws-sdk": "^2.1691.0",
@@ -17,7 +18,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-joystick-component": "^6.2.1",
-    "react-kinesis-webrtc": "^0.3.0"
+    "react-kinesis-webrtc": "^0.3.0",
+    "react-player": "^2.16.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",

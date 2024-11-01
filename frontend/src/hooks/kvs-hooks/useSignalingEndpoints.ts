@@ -27,8 +27,8 @@ export const useSignalingEndpoints = (kinesisVideoClient: KinesisVideo | null, c
                     return acc as ResourceEndpoint;
                 }, { HTTPS: "", WSS: "" } as ResourceEndpoint);
 
-                if (endpoints) 
-                setEndpoint(endpoints);
+                if (endpoints)
+                    setEndpoint(endpoints);
             } catch (error) {
                 console.error("Error fetching signaling endpoints:", error);
             }

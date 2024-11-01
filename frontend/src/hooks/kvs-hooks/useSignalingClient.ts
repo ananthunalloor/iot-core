@@ -29,8 +29,6 @@ export const useSignalingClient = ({
     useState<RTCPeerConnection | null>(null);
   const [connect, setConnection] = useState<boolean>(false);
 
-
-
   useEffect(() => {
     if (!connect) return;
     if (!credentials || !endpoint || !channelARN || !iceServers.length) return;
