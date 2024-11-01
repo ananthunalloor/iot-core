@@ -1,15 +1,11 @@
 import { iot, mqtt } from "aws-iot-device-sdk-v2";
 import { useEffect, useState } from "react";
-import { useAwsCredentials } from "./use-get-aws-credentials";
+import { CredentialsType } from "./use-get-aws-credentials";
 
-export type useAwsIotMqttProps = {
-  setMessageHandler: (topic: string, message: string) => void;
-};
 
-export const useAwsIotMqtt = () => {
+export const useAwsIotMqtt = (credentials: CredentialsType | undefined) => {
   const [connection, setConnection] =
     useState<mqtt.MqttClientConnection | null>(null);
-  const credentials = useAwsCredentials();
 
   useEffect(() => {
     if (!credentials) return;

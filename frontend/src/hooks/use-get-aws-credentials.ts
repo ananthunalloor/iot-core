@@ -3,14 +3,15 @@ import { useEffect, useState } from "react";
 
 export type CredentialsType = {
   accessKeyId?: string;
-  secretAccessKey?:  string;
-  sessionToken?:   string;
+  secretAccessKey?: string;
+  sessionToken?: string;
 }
 
 export const useAwsCredentials = () => {
   const [credentials, setCredentials] = useState<CredentialsType>();
 
   useEffect(() => {
+    if (credentials?.accessKeyId) return;
     const getTemporaryCredentials = async () => {
       const sts = new AWS.STS();
       const params = {
@@ -21,6 +22,11 @@ export const useAwsCredentials = () => {
       try {
         const data = await sts.assumeRole(params).promise();
 
+        if (!data?.Credentials) {
+          console.error('Error obtaining AWS credentials');
+          setCredentials(undefined);
+          return;
+        }
 
         setCredentials({
           accessKeyId: data?.Credentials?.AccessKeyId,
@@ -41,7 +47,7 @@ export const useAwsCredentials = () => {
     });
 
     getTemporaryCredentials();
-  }, []);
+  }, [credentials]);
 
   return credentials;
 };

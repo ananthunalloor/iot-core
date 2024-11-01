@@ -1,15 +1,20 @@
 import { useRef } from "react";
-import { useAwsCredentials } from "../hooks/use-get-aws-credentials";
+import { CredentialsType } from "../hooks/use-get-aws-credentials";
 import { useKinesisVideoClient } from "../hooks/kvs-hooks/useKinesisVideoClient";
 import { useChannelARN } from "../hooks/kvs-hooks/useChannelARN";
 import { useSignalingEndpoints } from "../hooks/kvs-hooks/useSignalingEndpoints";
 import { useIceServers } from "../hooks/kvs-hooks/useIceServers";
 import { useSignalingClient } from "../hooks/kvs-hooks/useSignalingClient";
 
-export const WebRTCViewer = () => {
+export interface StreamPlayerProps {
+  credentials?: CredentialsType
+}
+
+
+export const WebRTCViewer = ({ credentials }: StreamPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const credentials = useAwsCredentials();
+  // const credentials = useAwsCredentials();
   const kinesisVideoClient = useKinesisVideoClient({ credentials });
   const channelARN = useChannelARN({ kinesisVideoClient });
   const endpoint = useSignalingEndpoints(kinesisVideoClient, channelARN);

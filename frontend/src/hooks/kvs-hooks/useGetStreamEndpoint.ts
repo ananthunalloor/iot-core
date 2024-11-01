@@ -1,45 +1,59 @@
 import { KinesisVideo, KinesisVideoArchivedMedia } from "aws-sdk";
-import { GetDataEndpointOutput } from "aws-sdk/clients/kinesisvideo";
 import { useEffect, useState } from "react";
+import { CredentialsType } from "../use-get-aws-credentials";
 
-export const useGetStreamEndpoints = (kinesisVideoClient: KinesisVideo | null) => {
+export interface useGetStreamEndpointsProps {
+    kinesisVideoClient: KinesisVideo | null
+    credentials?: CredentialsType
+}
 
-    const [endpoint, setEndpoint] = useState<GetDataEndpointOutput | null>(null);
+export const useGetStreamEndpoints = ({ kinesisVideoClient, credentials }: useGetStreamEndpointsProps) => {
+
+    const [endpoint, setEndpoint] = useState<string>();
 
     useEffect(() => {
-        if (!kinesisVideoClient) return;
+        if (!kinesisVideoClient || !credentials) return;
 
         const fetchEndpoints = async () => {
             try {
                 const res = await kinesisVideoClient.getDataEndpoint({
                     APIName: "GET_HLS_STREAMING_SESSION_URL",
-                    StreamName: "rover_iot_thing"
+                    StreamName: "rover_iot_thing",
                 }).promise()
 
-                const archive = new KinesisVideoArchivedMedia({
+                console.log('Streaming endpoint found', res);
 
+                const archivedMediaClient = new KinesisVideoArchivedMedia({
+                    region: import.meta.env.VITE_REGION,
+                    accessKeyId: credentials.accessKeyId,
+                    secretAccessKey: credentials.secretAccessKey,
+                    sessionToken: credentials.sessionToken,
+                    endpoint: res.DataEndpoint,
                 })
 
-                const response = await archive.getHLSStreamingSessionURL({
+                console.log('Streaming endpoint found ---------', archivedMediaClient);
+
+                const getHLSStreamingSessionURLOptions = {
                     StreamName: 'rover_iot_thing',
+                    PlaybackMode: 'LIVE'
+                };
+                const response = await archivedMediaClient
+                    .getHLSStreamingSessionURL(getHLSStreamingSessionURLOptions)
+                    .promise()
 
-                }).promise()
+                console.log('Streaming endpoint found', response);
 
-                const tt = await kinesisVideoClient.describeStream({ StreamName: 'rover_iot_thing' }).promise()
-
-
-
-                console.log('response ', response.HLSStreamingSessionURL, tt.StreamInfo)
-                setEndpoint(res)
+                const hlsUrl = response.HLSStreamingSessionURL;
+                console.log('Streaming endpoint found', hlsUrl);
+                setEndpoint(hlsUrl)
 
             } catch (error) {
-                console.error(error);
+                console.log('Streaming endpoint not found', error);
             }
-
         };
 
         fetchEndpoints();
-    }, [kinesisVideoClient]);
+    }, [kinesisVideoClient, credentials]);
 
-    return endpoint?.DataEndpoint
+    return endpoint
 }

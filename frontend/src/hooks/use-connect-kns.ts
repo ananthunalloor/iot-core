@@ -7,7 +7,7 @@ import {
 import { KinesisVideo } from "aws-sdk";;
 
 export const AWSWebRTCConfig = () => {
-  const cred = useAwsCredentials();
+  // const cred = useAwsCredentials();
 
   const [credentials, setCredentials] = useState<CredentialsType | null>(null);
   const [kinesisVideoClient, setKinesisVideoClient] =
@@ -15,11 +15,11 @@ export const AWSWebRTCConfig = () => {
   const [channelARN, setChannelARN] = useState<string>();
 
   // Set credentials when available
-  useEffect(() => {
-    if (cred) {
-      setCredentials(cred);
-    }
-  }, [cred]);
+  // useEffect(() => {
+  //   if (cred) {
+  //     setCredentials(cred);
+  //   }
+  // }, [cred]);
 
   // Initialize Kinesis Video client when credentials are set
   useEffect(() => {
