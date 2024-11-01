@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   SignalingClient,
-  SigV4RequestSigner,
 } from "amazon-kinesis-video-streams-webrtc";
 
 import { ResourceEndpoint } from "./useSignalingEndpoints";
@@ -28,12 +27,12 @@ export const useSignalingClient = ({
     useState<SignalingClient | null>(null);
   const [peerConnectionState, setPeerConnection] =
     useState<RTCPeerConnection | null>(null);
-    const [connect, setConnection] = useState<boolean>(false);
+  const [connect, setConnection] = useState<boolean>(false);
 
 
 
   useEffect(() => {
-    if(!connect) return;
+    if (!connect) return;
     if (!credentials || !endpoint || !channelARN || !iceServers.length) return;
 
     if (!credentials?.accessKeyId || !credentials?.secretAccessKey) return;
@@ -41,7 +40,7 @@ export const useSignalingClient = ({
 
     if (peerConnectionState) return;
     console.log("Connecting to signaling server...");
-    
+
     const peerConnection = new RTCPeerConnection({
       iceServers,
       iceTransportPolicy: "all",
@@ -60,7 +59,7 @@ export const useSignalingClient = ({
     });
 
     client.on("open", async () => {
-        if (peerConnection.signalingState === "closed") return;
+      if (peerConnection.signalingState === "closed") return;
       const offer = await peerConnection.createOffer({
         offerToReceiveAudio: true,
         offerToReceiveVideo: true,
@@ -71,17 +70,31 @@ export const useSignalingClient = ({
         client.sendSdpOffer(peerConnection.localDescription);
     });
 
-    client.on("sdpAnswer", (answer) =>{
-        if (!peerConnection.remoteDescription) {
-            peerConnection.setRemoteDescription(answer);
-          }}
+    client.on("sdpAnswer", async (answer) => {
+      // if (!peerConnection.remoteDescription) {
+      await peerConnection.setRemoteDescription(answer);
+      // }}
+    }
     );
+
+    client.on("iceCandidate", (candidate) => {
+      // if (peerConnection.signalingState === "closed") return;
+      peerConnection.addIceCandidate(candidate);
+    });
+
+    client.on("close", () => {
+      console.log("Disconnected from signaling server");
+    });
+
+    client.on("error", (error) => {
+      console.error("Error from signaling server:", error);
+    });
 
     peerConnection.onicecandidate = (event) => {
       console.log("Local ICE candidate: ", event.candidate);
       if (event.candidate) {
         client.sendIceCandidate(event.candidate);
-      
+
         if (peerConnection.localDescription) {
           client.sendSdpAnswer(peerConnection.localDescription);
         }
@@ -93,17 +106,15 @@ export const useSignalingClient = ({
         return;
       }
       ref.current!.srcObject = streams[0];
-      ref.current!.play();
-      ref
-        .current!.play()
-        .catch((error) => console.error("Error playing video:", error));
+
+      console.log("Received remote stream");
     };
 
     peerConnection.removeEventListener("icecandidate", (event) => {
       console.log("Local ICE candidate: ", event.candidate);
       if (event.candidate) {
         client.sendIceCandidate(event.candidate);
-      
+
         if (peerConnection.localDescription) {
           client.sendSdpAnswer(peerConnection.localDescription);
         }
@@ -115,27 +126,43 @@ export const useSignalingClient = ({
 
     return () => {
       console.log("Cleaning up signaling client and peer connection");
-      client.close();
     };
   }, [channelARN, credentials, endpoint, iceServers, ref, connect, peerConnectionState, signalingClient]);
 
   const connectToAwsKinesis = useCallback(() => {
     setConnection(true)
-  }, [setConnection]);
+    if (signalingClient) {
+      signalingClient.open();
+    }
+  }, [signalingClient]);
 
-  const disconnectFromAwsKinesis =  useCallback(() => {
+  const disconnectFromAwsKinesis = useCallback(() => {
+    if (signalingClient) {
+      signalingClient.close();
+      setSignalingClient(null);
+    }
+    if (peerConnectionState) {
+      peerConnectionState.close();
+      setPeerConnection(null);
+    }
+    if (ref.current?.srcObject) {
+      // stop video tracks
+      (ref.current.srcObject as MediaStream).getTracks().forEach((track) => {
+        track.stop();
+      });
+      ref.current.srcObject = null;
+    }
     setConnection(false)
-  }, [setConnection]);
+  }, [peerConnectionState, ref, signalingClient]);
 
   useEffect(() => {
     if (!connect) {
-      signalingClient?.close();
-
+      disconnectFromAwsKinesis();
     } else {
-      signalingClient?.open();
+      connectToAwsKinesis();
     }
 
-  }, [connect, signalingClient]);
+  }, [connect, connectToAwsKinesis, disconnectFromAwsKinesis]);
 
-  return { signalingClient, peerConnection : peerConnectionState, connectToAwsKinesis, disconnectFromAwsKinesis };
+  return { signalingClient, peerConnection: peerConnectionState, connectToAwsKinesis, disconnectFromAwsKinesis };
 };

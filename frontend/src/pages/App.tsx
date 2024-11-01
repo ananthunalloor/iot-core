@@ -1,12 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAwsIotMqtt } from "../hooks/use-connect-iot";
 import { mqtt } from "aws-iot-device-sdk-v2";
 import { Joystick } from "react-joystick-component";
-// import { useKinesisViewer } from "../hooks/useKinesisViewer";
 import { WebRTCViewer } from "../components/webrtc-viewer";
-
-// import { AWSWebRTCViewer } from "../components/aws-webtrc-viewer";
-// import { AWSWebRTCConfig } from "../hooks/use-connect-kns";
 
 type JoystickDirection = "FORWARD" | "RIGHT" | "LEFT" | "BACKWARD";
 export interface IJoystickUpdateEvent {
@@ -34,7 +30,6 @@ export const App = () => {
   const [joystickData, setJoystickData] = useState<IJoystickUpdateEvent | null>(
     null
   );
-  // const videoRef = useRef<HTMLVideoElement>(null);
 
   const setMessageHandler = (topic: string, message: string) => {
     setMessages((prevMessages) => [...prevMessages, { topic, message }]);
@@ -47,10 +42,6 @@ export const App = () => {
   };
 
   const connection = useAwsIotMqtt();
-  // const config = AWSWebRTCConfig()
-  // const signaling = useKinesisViewer(videoRef);
-
-
 
   useEffect(() => {
     if (connection) {
@@ -87,16 +78,6 @@ export const App = () => {
       ? (Date.now() - latestMessage.timestamp * 1000).toFixed(2)
       : 0;
   }, [latestMessage.timestamp]);
-
-  // const connectToAwsKinesis = useCallback(() => {
-  //   if (!signaling) return;
-  //   signaling.open();
-  // }, [signaling]);
-
-  // const disconnectFromAwsKinesis = useCallback(() => {
-  //   if (!signaling) return;
-  //   signaling.close();
-  // }, [signaling]);
 
   const handleMove = (event: IJoystickUpdateEvent) => {
     setJoystickData(event);
@@ -200,14 +181,7 @@ export const App = () => {
             </div>
           </div>
         </div>
-        {/* <div className="w-[854px] h-[480px] bg-gray-100 rounded-lg flex flex-col items-center justify-center ">
-          <video height='100%' width='100%' autoPlay ref={videoRef} />
-          <div className="flex flex-row gap-4">
-            <button className="px-6 py-2 text-lg text-white bg-indigo-500 border-0 rounded" onClick={connectToAwsKinesis}>Connect</button>
-            <button className="px-6 py-2 text-lg text-white bg-indigo-500 border-0 rounded" onClick={disconnectFromAwsKinesis}>Disconnect</button>
-          </div>
-        </div> */}
-        <div className="w-[854px] h-[480px] bg-gray-100 rounded-lg flex flex-col items-center justify-center ">
+        <div className="w-[854px] bg-gray-100 p-4 rounded-lg flex flex-col items-center justify-center ">
           <WebRTCViewer />
         </div>
       </div>
