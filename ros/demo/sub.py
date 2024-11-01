@@ -7,7 +7,7 @@ from awsiot import mqtt_connection_builder
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 
-TOPIC = "ros2_mock_publish_topic"
+TOPIC = "rover_iot_thing/publish_topic"
 
 def configure_mqtt_client():
     with open('/home/ros/cert/iot_config.json') as f:

@@ -55,7 +55,7 @@ export const App = () => {
   useEffect(() => {
     if (connection) {
       connection.subscribe(
-        "ros2_mock_telemetry_topic",
+        "rover_iot_thing/telemetry_topic",
         mqtt.QoS.AtLeastOnce,
         (topic, payload) => {
           const message = new TextDecoder("utf-8").decode(
@@ -73,7 +73,7 @@ export const App = () => {
     }
     connection
       .publish(
-        "ros2_mock_publish_topic",
+        "rover_iot_thing/publish_topic",
         JSON.stringify(publishMessage),
         mqtt.QoS.AtLeastOnce
       )
@@ -208,7 +208,7 @@ export const App = () => {
           </div>
         </div> */}
         <div className="w-[854px] h-[480px] bg-gray-100 rounded-lg flex flex-col items-center justify-center ">
-             <WebRTCViewer />
+          <WebRTCViewer />
         </div>
       </div>
     </div>
