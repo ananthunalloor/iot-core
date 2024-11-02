@@ -34,7 +34,7 @@ echo "Starting KVS stream"
 #             role-aliases=$AWS_IOT_CORE_ROLE_ALIAS"
 
 # working
-gst-launch-1.0 -v videotestsrc do-timestamp=TRUE ! video/x-raw,width=640,height=480 ! x264enc ! h264parse ! kvssink \
+gst-launch-1.0 v4l2src do-timestamp=TRUE device=/dev/video0 ! jpegdec ! x264enc ! h264parse ! video/x-h264 ! kvssink \
     stream-name="$THING_NAME" \
     aws-region="$AWS_REGION" \
     iot-certificate=" \
@@ -44,6 +44,8 @@ gst-launch-1.0 -v videotestsrc do-timestamp=TRUE ! video/x-raw,width=640,height=
             key-path=$AWS_IOT_CORE_PRIVATE_KEY, \
             ca-path=$AWS_IOT_CORE_CA_PATH, \
             role-aliases=$AWS_IOT_CORE_ROLE_ALIAS"
+
+# Content type returned from the DescribeStream(null) call doesn't match the one specified in the StreamInfo(video/h264)
 # working
 # gst-launch-1.0 -v videotestsrc do-timestamp=TRUE ! video/x-raw,width=640,height=480 ! x264enc ! h264parse ! kvssink \
 #     stream-name="$THING_NAME" \

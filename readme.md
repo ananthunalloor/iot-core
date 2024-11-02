@@ -104,3 +104,12 @@ make build
 cmake
 
 git clone --recursive https://github.com/awslabs/amazon-kinesis-video-streams-webrtc-sdk-c.git
+
+usbipd list
+
+usbipd bind --busid 1-3
+usbipd attach --wsl --busid 1-3
+
+v4l2-ctl --list-devices
+
+guvcview

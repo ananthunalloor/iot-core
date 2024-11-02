@@ -7,6 +7,8 @@ RUN apt-get update && \
     iputils-ping \
     net-tools \
     vim \
+    v4l-utils \
+    guvcview\
     nano && \
     rm -rf /var/lib/apt/lists/*
 
