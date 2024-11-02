@@ -26,18 +26,18 @@ export LD_LIBRARY_PATH=`pwd`/open-source/local/lib
 echo "GST_PLUGIN_PATH: $GST_PLUGIN_PATH"
 echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
 
-if ! grep -q "export GST_PLUGIN_PATH" ~/.bashrc; then
-    echo "export GST_PLUGIN_PATH=`pwd`/build" >> ~/.bashrc
-    echo "LD_LIBRARY_PATH set in ~/.bashrc"
-fi
+# if ! grep -q "export GST_PLUGIN_PATH" ~/.bashrc; then
+#     echo "export GST_PLUGIN_PATH=`pwd`/build" >> ~/.bashrc
+#     echo "LD_LIBRARY_PATH set in ~/.bashrc"
+# fi
 
-if ! grep -q "export LD_LIBRARY_PATH" ~/.bashrc; then
-    echo "export LD_LIBRARY_PATH=`pwd`/open-source/local/lib" >> ~/.bashrc
-    echo "LD_LIBRARY_PATH set in ~/.bashrc"
-fi
-source ~/.bashrc
+# if ! grep -q "export LD_LIBRARY_PATH" ~/.bashrc; then
+#     echo "export LD_LIBRARY_PATH=`pwd`/open-source/local/lib" >> ~/.bashrc
+#     echo "LD_LIBRARY_PATH set in ~/.bashrc"
+# fi
+# source ~/.bashrc
 
-# echo "export GST_PLUGIN_PATH=`pwd`/build" >> ~/.bashrc
+echo "export GST_PLUGIN_PATH=`pwd`/build" >> ~/.bashrc
 # echo "export LD_LIBRARY_PATH=`pwd`/open-source/local/lib" >> ~/.bashrc
 
 echo "KVS setup complete"
