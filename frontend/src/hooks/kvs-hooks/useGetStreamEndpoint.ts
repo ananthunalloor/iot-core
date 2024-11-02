@@ -35,7 +35,13 @@ export const useGetStreamEndpoints = ({ kinesisVideoClient, credentials }: useGe
 
                 const getHLSStreamingSessionURLOptions = {
                     StreamName: 'rover_iot_thing',
-                    PlaybackMode: 'LIVE'
+                    PlaybackMode: 'LIVE',
+                    // HLSFragmentSelector: {
+                    //     FragmentSelectorType: 'PRODUCER_TIMESTAMP',
+                    //     TimestampRange: {
+                    //         StartTimestamp: new Date()
+                    //     }
+                    // }
                 };
                 const response = await archivedMediaClient
                     .getHLSStreamingSessionURL(getHLSStreamingSessionURLOptions)

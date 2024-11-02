@@ -37,7 +37,24 @@ export const StreamPlayer = ({ credentials }: StreamPlayerProps) => {
 
 
     return <div className="flex flex-col items-center justify-center w-full h-full gap-4 bg-gray-100 rounded-lg ">
-        <ReactPlayer url={streamEndpoint || ''} width="100%" height="100%" muted />
+        <ReactPlayer
+        volume={0}
+        playbackRate={1}
+        playing
+        // controls
+        muted
+         config={{ file: {
+            forceHLS: true,
+            forceDASH: true,
+            hlsOptions:{
+                // "debug": true,
+                "enableWorker": true,
+                "lowLatencyMode": true,
+                // "backBufferLength": 90
+            }
+
+        }}} url={streamEndpoint || ''} width="100%" height="100%"  onBufferEnd={() => console.log("onBufferEnd")}  />
+        
         <div className="flex flex-row gap-4">
             <button
                 className="px-6 py-2 text-lg text-white bg-blue-500 border-0 rounded"
