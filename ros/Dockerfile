@@ -42,6 +42,9 @@ RUN apt-get update && \
 
 RUN pip install awsiotsdk --break-system-packages
 
+# install dev dependencies, for demo
+RUN pip install boto3 aiortc opencv-python --break-system-packages
+
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Download and install AWS CLI v2

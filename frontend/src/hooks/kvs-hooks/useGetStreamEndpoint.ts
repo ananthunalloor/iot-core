@@ -4,10 +4,11 @@ import { CredentialsType } from "../use-get-aws-credentials";
 
 export interface useGetStreamEndpointsProps {
     kinesisVideoClient: KinesisVideo | null
-    credentials?: CredentialsType
+    credentials?: CredentialsType,
+    connect: boolean
 }
 
-export const useGetStreamEndpoints = ({ kinesisVideoClient, credentials }: useGetStreamEndpointsProps) => {
+export const useGetStreamEndpoints = ({ kinesisVideoClient, credentials, connect }: useGetStreamEndpointsProps) => {
 
     const [endpoint, setEndpoint] = useState<string>();
 
@@ -58,8 +59,11 @@ export const useGetStreamEndpoints = ({ kinesisVideoClient, credentials }: useGe
             }
         };
 
-        fetchEndpoints();
-    }, [kinesisVideoClient, credentials]);
+        if (connect)
+            fetchEndpoints();
+        else
+            setEndpoint(undefined)
+    }, [kinesisVideoClient, credentials, connect]);
 
     return endpoint
 }

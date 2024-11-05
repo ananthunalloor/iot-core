@@ -38,7 +38,7 @@ echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
 # source ~/.bashrc
 
 echo "export GST_PLUGIN_PATH=`pwd`/build" >> ~/.bashrc
-# echo "export LD_LIBRARY_PATH=`pwd`/open-source/local/lib" >> ~/.bashrc
+echo "export LD_LIBRARY_PATH=`pwd`/open-source/local/lib" >> ~/.bashrc
 
 echo "KVS setup complete"
 

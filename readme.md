@@ -113,3 +113,5 @@ usbipd attach --wsl --busid 1-3
 v4l2-ctl --list-devices
 
 guvcview
+
+sudo apt-get update && apt install v4l-utils guvcview
