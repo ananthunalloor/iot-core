@@ -34,7 +34,7 @@ echo "Starting KVS stream"
 #             role-aliases=$AWS_IOT_CORE_ROLE_ALIAS"
 
 # working
-gst-launch-1.0 v4l2src do-timestamp=TRUE device=/dev/video0 ! jpegdec ! x264enc ! h264parse ! video/x-h264 ! kvssink \
+gst-launch-1.0 v4l2src do-timestamp=TRUE device=/dev/video0 ! jpegdec ! videoconvert ! video/x-raw,format=I420,width=640,height=480,framerate=30/1 ! x264enc ! h264parse ! video/x-h264 ! kvssink \
     stream-name="$THING_NAME" \
     aws-region="$AWS_REGION" \
     iot-certificate=" \

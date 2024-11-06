@@ -102,7 +102,7 @@ export const App = () => {
       if (!connection) return;
       console.log(joystickData);
       connection.publish(
-        "ros2_mock_publish_topic",
+        "rover_iot_thing/publish_topic",
         JSON.stringify(joystickData),
         mqtt.QoS.AtMostOnce
       );

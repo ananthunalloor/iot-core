@@ -41,9 +41,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip install awsiotsdk --break-system-packages
-
 # install dev dependencies, for demo
-RUN pip install boto3 aiortc opencv-python --break-system-packages
+# RUN pip install aiortc opencv-python --break-system-packages
+
 
 ENV PATH="/opt/venv/bin:$PATH"
 

@@ -49,3 +49,10 @@ cd amazon-kinesis-video-streams-webrtc-sdk-c/build
 
 cmake ..
 make
+
+#  "v4l2src do-timestamp=TRUE device=/dev/video0 ! jpegdec ! queue",
+#     " ! videorate ! videoscale ! videoconvert ! video/x-raw,format=I420,width=640,height=480,framerate=25/1"
+#     " ! x264enc name=sampleVideoEncoder bframes=0 speed-preset=veryfast bitrate=512 byte-stream=TRUE tune=zerolatency",
+#     " ! h264parse ! video/x-h264"
+#     " appsink sync=TRUE "
+#                         "emit-signals=TRUE name=appsink-video",

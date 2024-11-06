@@ -48,10 +48,15 @@ test_gst_command = [
 def start_video_stream():
 
     gst_command = [
-    # "!", "jpegdec",
     "gst-launch-1.0",
     "v4l2src", "do-timestamp=TRUE", "device=/dev/video0",
-    "!", "x264enc",
+    "!", "jpegdec",
+    "!", "queue",
+    "!", "videorate",
+    "!", "videoscale",
+    "!", "videoconvert",
+    "!", "video/x-raw,format=I420,width=640,height=480,framerate=25/1",
+    "!", "x264enc","name=sampleVideoEncoder","bframes=0","speed-preset=veryfast","bitrate=512","byte-stream=TRUE","tune=zerolatency",
     "!", "h264parse",
     "!", "video/x-h264",
     "!", "kvssink",
@@ -62,10 +67,21 @@ def start_video_stream():
     
     # Execute the GStreamer pipeline
     try:
-        subprocess.run(test_gst_command, check=True)
+        subprocess.run(gst_command, check=True)
     except subprocess.CalledProcessError as e:
         print("Error in GStreamer pipeline:", e, file=sys.stderr)
 
 # Example usage
 if __name__ == "__main__":
     start_video_stream()
+
+
+# senderPipeline = gst_parse_launch(
+#     "v4l2src do-timestamp=TRUE device=/dev/video0 ! jpegdec ! queue ! "
+#     "videorate ! videoscale ! videoconvert ! video/x-raw,format=I420,width=640,height=480,framerate=25/1 ! "
+#     "x264enc name=sampleVideoEncoder bframes=0 speed-preset=veryfast bitrate=512 byte-stream=TRUE tune=zerolatency ! h264parse ! "
+#     "video/x-h264,stream-format=byte-stream,alignment=au,profile=baseline ! appsink sync=TRUE emit-signals=TRUE "
+#     "name=appsink-video autoaudiosrc ! "
+#     "queue leaky=2 max-size-buffers=400 ! audioconvert ! audioresample ! opusenc name=sampleAudioEncoder ! "
+#     "audio/x-opus,rate=48000,channels=2 ! appsink sync=TRUE emit-signals=TRUE name=appsink-audio",
+#     &error);
