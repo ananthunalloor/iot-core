@@ -115,3 +115,12 @@ v4l2-ctl --list-devices
 guvcview
 
 sudo apt-get update && apt install v4l-utils guvcview
+
+sudo apt update && sudo apt install ros-jazzy-turtlesim '~nros-jazzy-rqt*'
+sudo apt update && sudo apt install '~nros-jazzy-rqt*'
+ros2 pkg executables turtlesim
+
+ros2 run turtlesim turtlesim_node
+ros2 run turtlesim turtle_teleop_key
+ros2 run turtlesim turtle_teleop_key --ros-args --remap turtle1/cmd_vel:=demo/cmd_vel
+rqt

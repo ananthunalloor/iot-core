@@ -8,9 +8,12 @@ RUN apt-get update && \
     net-tools \
     vim \
     v4l-utils \
-    guvcview\
+    guvcview \
+    ros-jazzy-turtlesim \
+    '~nros-jazzy-rqt*' \
     nano && \
     rm -rf /var/lib/apt/lists/*
+
 
 # Install dependencies for AWS CLI
 RUN apt-get update && \
