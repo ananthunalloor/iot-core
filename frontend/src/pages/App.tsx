@@ -68,6 +68,7 @@ export const App = () => {
     if (!connection) {
       return;
     }
+
     connection
       .publish(
         "rover_iot_thing/publish_topic",
@@ -100,10 +101,27 @@ export const App = () => {
   useEffect(() => {
     if (joystickData) {
       if (!connection) return;
-      console.log(joystickData);
+      // console.log(joystickData);
+
+      const multiplier = 1;
+      const message = {
+        linear: {
+          x: ((joystickData.y ?? 0) * multiplier).toFixed(4),
+          y: ((joystickData.x ?? 0) * -multiplier).toFixed(4),
+          // y: 0,
+
+          z: 0,
+        },
+        angular: {
+          x: 0,
+          y: 0,
+          z: 0,
+        },
+      }
+      console.log(message.linear.x, joystickData);
       connection.publish(
         "rover_iot_thing/publish_topic",
-        JSON.stringify(joystickData),
+        JSON.stringify(message),
         mqtt.QoS.AtMostOnce
       );
     }

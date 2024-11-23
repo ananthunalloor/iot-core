@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import { CredentialsType } from "./use-get-aws-credentials";
 
 
-export const useAwsIotMqtt = (credentials: CredentialsType | undefined) => {
+export const useAwsIotMqtt = (credentials: CredentialsType | undefined, enabled: boolean = true) => {
   const [connection, setConnection] =
     useState<mqtt.MqttClientConnection | null>(null);
 
   useEffect(() => {
-    if (!credentials) return;
+    if (!credentials || !enabled) return;
 
     const connectToAwsIot = async () => {
       const { accessKeyId, secretAccessKey, sessionToken } = credentials;
