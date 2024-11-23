@@ -124,3 +124,5 @@ ros2 run turtlesim turtlesim_node
 ros2 run turtlesim turtle_teleop_key
 ros2 run turtlesim turtle_teleop_key --ros-args --remap turtle1/cmd_vel:=demo/cmd_vel
 rqt
+
+source myenv/bin/activate
