@@ -1,63 +1,81 @@
 import os
-import cv2
-import boto3
-import subprocess
 from botocore.config import Config
-
+import asyncio
+import boto3
+from aiortc import RTCConfiguration, RTCIceServer, RTCPeerConnection, RTCSessionDescription
 
 cert_folder_location = os.getenv("CERT_FOLDER_LOCATION", "../cert/")
 thing_name = os.getenv("THING_NAME", "your-thing-name")
 iot_kvs_role_alias = os.getenv("IOT_KVS_ROLE_ALIAS", "your-role-alias")
 aws_region = os.getenv("AWS_REGION", "your-region")
 
-# Read the endpoint from iot-credential-provider.txt file
-print(f"cert_folder_location: {cert_folder_location}")
 with open(f"{cert_folder_location}iot-credential-provider.txt", "r") as file:
     endpoint = file.read().strip()
 
-# Construct file paths for certificates and keys
 cert_file = f"{cert_folder_location}{thing_name}.cert.pem"
 private_key = f"{cert_folder_location}{thing_name}.private.key"
 root_cert_file = f"{cert_folder_location}kvs.cert.pem"
 
 
 my_config = Config(
-    region_name = aws_region
-)
-
-kvs_client = boto3.client('kinesisvideo', config=my_config)
-
-# Create the signaling channel (WebRTC)
-kvs_signaling = kvs_client.create_signaling_channel(
-    ChannelName=thing_name,
-    Type='SINGLE_MASTER')
-
-channel_arn = kvs_signaling['ChannelARN']
-
-channel_info = kvs_client.get_signaling_channel_endpoint(
-    ChannelName=thing_name,
-    SingleMasterChannelEndpointConfiguration={
-        'Protocols': ['WSS', 'HTTPS'],
-        'Role': 'MASTER'
+    region_name = aws_region,
+    signature_version = 'v4',
+    retries = {
+        'max_attempts': 10,
+        'mode': 'standard'
     }
 )
 
-# Initialize webcam
-cap = cv2.VideoCapture(0)
+client_id = "master"
 
-gst_str = f"appsrc ! videoconvert ! x264enc speed-preset=ultrafast tune=zerolatency ! \
-    rtph264pay config-interval=1 pt=96 ! application/x-rtp,media=video,encoding-name=H264,payload=96 ! \
-    webrtcbin name=sendrecv"
+def get_signaling_client():
+    session = boto3.Session()
+    kinesis_client = session.client(
+        "kinesisvideo",
+        region_name=aws_region,
+        config=my_config,
+    )
 
-pipeline = subprocess.Popen(gst_str, shell=True)
+    channel_arn = kinesis_client.describe_signaling_channel(
+        ChannelName=thing_name
+    )["ChannelInfo"]["ChannelARN"]
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
+    response = kinesis_client.get_signaling_channel_endpoint(
+        ChannelARN=channel_arn,
+        SingleMasterChannelEndpointConfiguration={
+            "Protocols": ["WSS", "HTTPS"],
+            "Role": "MASTER",
+        },
+    )
 
-    # Stream to KVS using WebRTC
-    process_frame(frame)
+    endpoint_url = response["ResourceEndpointList"][0]["ResourceEndpoint"]
 
-cap.release()
-pipeline.terminate()
+    client = session.client('kinesis-video-signaling', endpoint_url=endpoint_url)
+    ice_servers_list = client.get_ice_server_config(
+        ChannelARN = channel_arn)['IceServerList']
+    return ice_servers_list, channel_arn, endpoint_url
+
+
+
+async def run_master():
+     ice_servers_list , channel_arn, endpoint_url = get_signaling_client()
+     ice_servers = [RTCIceServer(urls=f'stun:stun.kinesisvideo.{aws_region}.amazonaws.com:443')]
+     
+     for ice_server in ice_servers_list:
+        ice_servers.append(RTCIceServer(
+                urls=ice_server['Uris'],
+                username=ice_server['Username'],
+                credential=ice_server['Password']
+            ))
+        configuration = RTCConfiguration(iceServers=ice_servers)
+
+        PCMap = {}
+        pc = RTCPeerConnection(configuration=configuration)
+        PCMap[client_id] = pc
+
+        print("Creating offer", PCMap)
+
+
+
+if __name__ == "__main__":
+    asyncio.run(run_master())
