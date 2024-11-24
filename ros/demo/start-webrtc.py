@@ -99,6 +99,31 @@ class WebRTCStreamController(Node):
             client_id=cert_data.get("clientID"),
     )
         return mqtt_connection
+    
+    async def start_stream(self):
+        logger = self.get_logger()
+        logger.info("Starting WebRTC stream")
+        try:
+            kvs = KinesisVideoClient()
+            loop = asyncio.get_running_loop()
+            self.current_task = loop.create_task(run_client(kvs))
+            logger.info("WebRTC stream started")
+        except RuntimeError:
+            self.current_task = asyncio.run(run_client(kvs))
+
+    async def stop_stream(self):
+        logger = self.get_logger()
+        if self.current_task:
+            logger.info("Stopping WebRTC stream")
+            self.current_task.cancel()
+            try:
+                await self.current_task
+            except asyncio.CancelledError:
+                logger.info("WebRTC stream stopped")
+            finally:
+                self.current_task = None
+        else:
+            logger.info("No WebRTC stream to stop")
 
     def on_message_received(self, topic, payload, **kwargs):
         logger = self.get_logger()
@@ -108,30 +133,14 @@ class WebRTCStreamController(Node):
         logger.info(f"Received message from topic '{topic}':{message}")
         # if command == "start_stream":
         #     logger.info("Starting WebRTC stream")
-        #     if self.current_task:
-        #         logger.info("Stopping existing WebRTC stream")
-        #         self.current_task.cancel()
-        #         try:
-        #             self.current_task  # Ensure the task is properly awaited
-        #         except asyncio.CancelledError:
-        #             logger.info("Existing WebRTC stream stopped")
-        #     try:
-        #         kvs = KinesisVideoClient()
-        #         loop = asyncio.get_running_loop()
-        #         self.current_task = loop.create_task(run_client(kvs))
-        #     except RuntimeError:  # no running event loop
-        #         self.current_task = asyncio.run(run_client(kvs))
+        #     self.loop.create_task(self.stop_stream())
+        #     self.loop.create_task(self.start_stream())
+
         # elif command == "stop_stream":
-        #     if self.current_task:
-        #         logger.info("Stopping WebRTC stream")
-        #         self.current_task.cancel()
-        #     try:
-        #         self.current_task  # Ensure the task is properly awaited
-        #         logger.info("WebRTC stream stopped")
-        #     except asyncio.CancelledError:
-        #         logger.info("WebRTC stream was already stopped")
+        #     self.loop.create_task(self.stop_stream())
+
         # else:
-        #     logger.info("No WebRTC stream to stop")
+        #     logger.info("Unknown command")
 
 class KinesisVideoClient(Node):
     def __init__(self):
