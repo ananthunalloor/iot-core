@@ -71,6 +71,7 @@ class WebRTCStreamController(Node):
         super().__init__('turtle_sim_controller')
         self.mqtt_connection = self.configure_mqtt_client()
         self.init_pubs()
+        self.current_task = None
     
     def init_pubs(self):
         logger = self.get_logger()
@@ -101,11 +102,36 @@ class WebRTCStreamController(Node):
 
     def on_message_received(self, topic, payload, **kwargs):
         logger = self.get_logger()
-        kvs = KinesisVideoClient()
-
         message = json.loads(payload)
+        command = message.get("command")
 
-        logger.info(f"Received message from topic '{topic}': {message}")
+        logger.info(f"Received message from topic '{topic}':{message}")
+        # if command == "start_stream":
+        #     logger.info("Starting WebRTC stream")
+        #     if self.current_task:
+        #         logger.info("Stopping existing WebRTC stream")
+        #         self.current_task.cancel()
+        #         try:
+        #             self.current_task  # Ensure the task is properly awaited
+        #         except asyncio.CancelledError:
+        #             logger.info("Existing WebRTC stream stopped")
+        #     try:
+        #         kvs = KinesisVideoClient()
+        #         loop = asyncio.get_running_loop()
+        #         self.current_task = loop.create_task(run_client(kvs))
+        #     except RuntimeError:  # no running event loop
+        #         self.current_task = asyncio.run(run_client(kvs))
+        # elif command == "stop_stream":
+        #     if self.current_task:
+        #         logger.info("Stopping WebRTC stream")
+        #         self.current_task.cancel()
+        #     try:
+        #         self.current_task  # Ensure the task is properly awaited
+        #         logger.info("WebRTC stream stopped")
+        #     except asyncio.CancelledError:
+        #         logger.info("WebRTC stream was already stopped")
+        # else:
+        #     logger.info("No WebRTC stream to stop")
 
 class KinesisVideoClient(Node):
     def __init__(self):
@@ -289,7 +315,6 @@ class KinesisVideoClient(Node):
         await asyncio.sleep(5)
         logger.info(f"Reconnected to signaling channel")
         # await self.handle_sdp_offer(payload, client_id, audio_track, video_track, websocket)
-
 
     async def signaling_client(self):
         logger = self.get_logger()
