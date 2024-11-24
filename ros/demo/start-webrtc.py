@@ -49,16 +49,16 @@ class MediaTrackManager:
     def __init__(self):
         self.audio_track = None
         self.video_track = None
+        self.relay = MediaRelay()
 
     def create_media_track(self):
-        relay = MediaRelay()
         options = {'framerate': '30'}
 
         # use a test pattern as mp4 video source instead of a real camera
         media = MediaPlayer('/home/ros/test-media/BigBuckBunny.mp4', format='mp4', options=options)
 
-        audio_track = relay.subscribe(media.audio) if media.audio else None
-        video_track = relay.subscribe(media.video) if media.video else None
+        audio_track = self.relay.subscribe(media.audio) if media.audio else None
+        video_track = self.relay.subscribe(media.video) if media.video else None
 
         if audio_track is None and video_track is None:
             raise ValueError("Neither audio nor video track could be created from the source.")
@@ -208,12 +208,7 @@ class KinesisVideoClient(Node):
         async def on_connectionstatechange():
             logger.info(f'[{client_id}] connectionState --1: {pc.connectionState}')
             if client_id in self.PCMap:
-                logger.info(f'[{client_id}] connectionState  11: {self.PCMap[client_id].connectionState}')
-            if pc.connectionState == 'failed' or pc.connectionState == 'closed':
-                await pc.close()
-                del self.PCMap[client_id]
-                del self.DCMap[client_id]
-                logger.info(f'[{client_id}] Peer connection closed')
+                logger.info(f'[{client_id}] connectionState  11: {self.PCMap[client_id].connectionState}')    
 
         @pc.on('iceconnectionstatechange')
         async def on_iceconnectionstatechange():
@@ -229,9 +224,12 @@ class KinesisVideoClient(Node):
 
         @pc.on('signalingstatechange')
         async def on_signalingstatechange():
+            signaling_state = pc.signalingState
             logger.info(f'[{client_id}] signalingState: 4{pc.signalingState}')
             if client_id in self.PCMap:
                 logger.info(f'[{client_id}] signalingState: 44{self.PCMap[client_id].signalingState}')
+                # if signaling_state == 'closed':
+                #     await self.handle_disconnect(client_id)
 
         @pc.on('track')
         def on_track(track):
@@ -271,6 +269,27 @@ class KinesisVideoClient(Node):
             candidate.sdpMid = payload['sdpMid']
             candidate.sdpMLineIndex = payload['sdpMLineIndex']
             await self.PCMap[client_id].addIceCandidate(candidate)
+    
+    async def handle_disconnect(self, client_id):
+        logger = self.get_logger()
+        if client_id in self.PCMap:
+            await self.PCMap[client_id].close()
+            del self.PCMap[client_id]
+            logger.info(f"Peer connection closed and removed for {client_id}")
+        if client_id in self.DCMap:
+            await self.DCMap[client_id].close()
+            del self.DCMap[client_id]
+            logger.info(f"Data channel closed and removed for {client_id}")
+
+    async def reconnect(self, client_id):
+        logger = self.get_logger()
+        await self.handle_disconnect(client_id)
+        logger.info(f"Reconnecting to signaling channel")
+        # wait for handle_disconnect to complete
+        await asyncio.sleep(5)
+        logger.info(f"Reconnected to signaling channel")
+        # await self.handle_sdp_offer(payload, client_id, audio_track, video_track, websocket)
+
 
     async def signaling_client(self):
         logger = self.get_logger()
@@ -284,14 +303,22 @@ class KinesisVideoClient(Node):
                     logger.info("Connected to signaling channel")
                     async for message in websocket:
                         msg_type, payload, client_id = self.decode_msg(message)
+                        logger.info(f"Received message: {msg_type} from {client_id}")
                         if msg_type == 'SDP_OFFER':
                             logger.info(f"Received SDP offer from {client_id}")
-                            await self.handle_sdp_offer(payload, client_id, audio_track, video_track, websocket)
+                            if client_id not in self.PCMap:
+                                await self.handle_sdp_offer(payload, client_id, audio_track, video_track, websocket)
+                            else:
+                                logger.warning(f"Peer connection already exists for {client_id}")
+                        
                         elif msg_type == 'ICE_CANDIDATE':
                             logger.info(f"Received ICE candidate from {client_id}")
+                            
                             await self.handle_ice_candidate(payload, client_id)
+
             except websockets.ConnectionClosed:
                 logger.info("Connection closed. Reconnecting...")
+                await asyncio.sleep(5)
                 wss_url = self.create_wss_url()
                 continue
 

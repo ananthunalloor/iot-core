@@ -125,4 +125,8 @@ ros2 run turtlesim turtle_teleop_key
 ros2 run turtlesim turtle_teleop_key --ros-args --remap turtle1/cmd_vel:=demo/cmd_vel
 rqt
 
+sudo apt update && apt install python3.12-venv
+
+python3 -m venv myenv
+
 source myenv/bin/activate
