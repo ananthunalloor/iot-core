@@ -340,10 +340,10 @@ class KinesisVideoClient(Node):
                         logger.info(f"Received message: {msg_type} from {client_id}")
                         if msg_type == 'SDP_OFFER':
                             logger.info(f"Received SDP offer from {client_id}")
-                            if client_id not in self.PCMap:
-                                await self.handle_sdp_offer(payload, client_id, audio_track, video_track, websocket)
-                            else:
-                                logger.warning(f"Peer connection already exists for {client_id}")
+                            await self.handle_sdp_offer(payload, client_id, audio_track, video_track, websocket)
+                            # if client_id not in self.PCMap:
+                            # else:
+                            #     logger.warning(f"Peer connection already exists for {client_id}")
                         
                         elif msg_type == 'ICE_CANDIDATE':
                             logger.info(f"Received ICE candidate from {client_id}")
