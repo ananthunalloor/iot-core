@@ -43,6 +43,16 @@ RUN apt-get update && \
     cmake && \
     rm -rf /var/lib/apt/lists/*
 
+# install dependencies for ROS2 turtle sim
+RUN apt-get update && \
+    apt-get install -y \
+    ros-jazzy-turtlesim \
+    v4l-utils \
+    guvcview \
+    '~nros-jazzy-rqt*' && \
+    rm -rf /var/lib/apt/lists/*
+
+
 RUN pip install awsiotsdk --break-system-packages
 # install dev dependencies, for demo
 # RUN pip install aiortc opencv-python --break-system-packages

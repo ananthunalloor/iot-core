@@ -26,14 +26,13 @@ class TurtleSimController(Node):
         twist.angular.z = angular_z
         self.get_logger().info(f"Publishing cmd_vel: {twist}")
         self.publisher.publish(twist)
-    
 
     def init_pubs(self):
         logger = self.get_logger()
         logger.info("Connecting to AWS IoT")
         self.mqtt_connection = self.configure_mqtt_client()
         self.mqtt_connection.connect()
-        logger.info("Connected to AWS IoT")
+        logger.info(f"Connected to AWS IoT : {TOPIC}")
         subscribe_future, _ = self.mqtt_connection.subscribe(
             TOPIC,
             mqtt.QoS.AT_LEAST_ONCE,

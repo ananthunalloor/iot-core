@@ -130,3 +130,6 @@ sudo apt update && apt install python3.12-venv
 python3 -m venv myenv
 
 source myenv/bin/activate
+
+pip install pyyaml
+awsiotsdk aiortc boto3 websockets numpy

@@ -8,7 +8,8 @@
         "arn:aws:iot:REGION:ACCOUNT_ID:topic/CLIENT/telemetry_topic",
         "arn:aws:iot:REGION:ACCOUNT_ID:topic/CLIENT/publish_topic",
         "arn:aws:iot:REGION:ACCOUNT_ID:topic/cmd_vel",
-        "arn:aws:iot:REGION:ACCOUNT_ID:topic/$aws/rules/*"
+        "arn:aws:iot:REGION:ACCOUNT_ID:topic/$aws/rules/*",
+        "arn:aws:iot:REGION:ACCOUNT_ID:topic/status_topic"
       ]
     },
     {

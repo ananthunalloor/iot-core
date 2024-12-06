@@ -16,10 +16,11 @@ from botocore.session import Session
 import websockets
 from aiortc import RTCConfiguration, RTCIceServer, RTCPeerConnection, RTCSessionDescription
 from aiortc.sdp import candidate_from_sdp
+from geometry_msgs.msg import Twist
 
 
 
-TOPIC = "rover_iot_thing/publish_topic"
+TOPIC = "bv_demo_iot_thing/publish_topic"
 
 cert_folder_location = os.getenv("CERT_FOLDER_LOCATION", "../cert/")
 thing_name = os.getenv("THING_NAME", "your-thing-name")
@@ -52,10 +53,14 @@ class MediaTrackManager:
         self.relay = MediaRelay()
 
     def create_media_track(self):
-        options = {'framerate': '30'}
+        options = {'framerate': '30', 'video_size': '960x540'}
+        # try webcam first and then fallback to video file
 
-        # use a test pattern as mp4 video source instead of a real camera
-        media = MediaPlayer('/home/ros/test-media/BigBuckBunny.mp4', format='mp4', options=options)
+        # try:
+        # except FileNotFoundError:
+        # media = MediaPlayer('/home/ros/test-media/BigBuckBunny.mp4', format='mp4', options=options, loop=True)
+        # media = MediaPlayer('/dev/video0', format='v4l2', options=options)
+        media = MediaPlayer('/home/ros/test-media/rccar720.mp4', format='mp4', options=options, loop=True)
 
         audio_track = self.relay.subscribe(media.audio) if media.audio else None
         video_track = self.relay.subscribe(media.video) if media.video else None
@@ -70,8 +75,9 @@ class WebRTCStreamController(Node):
     def __init__(self):
         super().__init__('turtle_sim_controller')
         self.mqtt_connection = self.configure_mqtt_client()
-        self.init_pubs()
+        self.publisher = self.create_publisher(Twist, '/turtle1/cmd_vel', 10)
         self.current_task = None
+        self.init_pubs()
     
     def init_pubs(self):
         logger = self.get_logger()
@@ -99,6 +105,13 @@ class WebRTCStreamController(Node):
             client_id=cert_data.get("clientID"),
     )
         return mqtt_connection
+    
+    def publish_cmd_vel(self, linear_x, angular_z):
+        twist = Twist()
+        twist.linear.x = linear_x
+        twist.angular.z = angular_z
+        self.get_logger().info(f"Publishing cmd_vel: {twist}")
+        self.publisher.publish(twist)
     
     async def start_stream(self):
         logger = self.get_logger()
@@ -129,18 +142,14 @@ class WebRTCStreamController(Node):
         logger = self.get_logger()
         message = json.loads(payload)
         command = message.get("command")
+        linear_x = float(message.get("linear", {}).get("x", 0.0))
+        angular_z = float(message.get("angular", {}).get("z", 0.0))
 
         logger.info(f"Received message from topic '{topic}':{message}")
-        # if command == "start_stream":
-        #     logger.info("Starting WebRTC stream")
-        #     self.loop.create_task(self.stop_stream())
-        #     self.loop.create_task(self.start_stream())
+        # # check if message contains a linear and angular velocity
+        # if linear_x or angular_z:
+        #     self.publish_cmd_vel(linear_x, angular_z)
 
-        # elif command == "stop_stream":
-        #     self.loop.create_task(self.stop_stream())
-
-        # else:
-        #     logger.info("Unknown command")
 
 class KinesisVideoClient(Node):
     def __init__(self):
@@ -295,6 +304,7 @@ class KinesisVideoClient(Node):
             sdp=payload['sdp'],
             type=payload['type']
         ))
+        
         await self.PCMap[client_id].setLocalDescription(await self.PCMap[client_id].createAnswer())
         await websocket.send(self.encode_msg('SDP_ANSWER', self.PCMap[client_id].localDescription, client_id))
 
@@ -365,8 +375,10 @@ async def main(args=None):
     node = WebRTCStreamController()
     kvs = KinesisVideoClient()
     await run_client(kvs)
+    print(378)
 
     rclpy.spin(node)
+    print(381)
     node.destroy_node()
     rclpy.shutdown()
 
